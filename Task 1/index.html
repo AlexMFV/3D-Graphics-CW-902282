@@ -1,0 +1,236 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <title> Coursework Task 1 </title>
+  <script src="webgl-debug.js"></script>
+  <script type="text/javascript" src="glMatrix.js"></script>
+  <script src="webgl-utils.js"></script>
+  <script type="text/javascript" src="modelEarth.js"></script>
+  <meta charset="utf-8">
+
+  <script id="shader-vs" type="x-shader/x-vertex">
+    attribute vec3 aVertexPosition;
+    attribute vec4 aVertexColor;
+
+    uniform mat4 uMVMatrix;
+    uniform mat4 uPMatrix;
+
+    varying vec4 vColor;
+
+    void main() {
+      gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+      vColor = aVertexColor;
+    }
+  </script>
+
+  <script id="shader-fs" type="x-shader/x-fragment">
+    precision mediump float;
+    varying vec4 vColor;
+
+    void main() {
+      gl_FragColor = vColor;
+    }
+  </script>
+
+
+  <script type="text/javascript">
+    var gl;
+    var pwgl = {};
+    var canvas;
+    var shaderProgram;
+
+    //Adding new global variables:
+    var earthVertexPositionBuffer;
+    var earthVertexIndexBuffer;
+
+    var modelViewMatrix;
+    var projectionMatrix;
+    var modelViewMatrixStack;
+
+    function createGLContext(canvas) {
+      var names = ["webgl", "experimental-webgl"];
+      var context = null;
+      for (var i=0; i < names.length; i++) {
+        try {
+          context = canvas.getContext(names[i]);
+        } catch(e) {}
+        if (context) {
+          break;
+        }
+      }
+      if (context) {
+        context.viewportWidth = canvas.width;
+        context.viewportHeight = canvas.height;
+      } else {
+        alert("Failed to create WebGL context!");
+      }
+      return context;
+    }
+
+    function loadShaderFromDOM(id) {
+      var shaderScript = document.getElementById(id);
+
+      // If there are no shader scripts, the function exits
+      if (!shaderScript) {
+        return null;
+      }
+
+      // Otherwise loop through the children for the found DOM element and
+      // build up the shader source code as a string
+      var shaderSource = "";
+      var currentChild = shaderScript.firstChild;
+      while (currentChild) {
+        if (currentChild.nodeType == 3) { // 3 corresponds to TEXT_NODE
+          shaderSource += currentChild.textContent;
+        }
+        currentChild = currentChild.nextSibling;
+      }
+
+      //Create a WebGL shader object according to type of shader, i.e., //vertex or fragment shader.
+      var shader;
+      if (shaderScript.type == "x-shader/x-fragment") {
+        //call WebGL function createShader() to create fragment
+        //shader object
+        shader = gl.createShader(gl.FRAGMENT_SHADER);
+      } else if (shaderScript.type == "x-shader/x-vertex") {
+        //call WebGL function createShader() to create vertx shader obj.
+        shader = gl.createShader(gl.VERTEX_SHADER);
+      } else {
+        return null;
+      }
+
+      //load the shader source code (shaderSource) to the shader object.
+      gl.shaderSource(shader, shaderSource);
+      gl.compileShader(shader); //compile the shader
+
+      //check compiling status.
+      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        alert(gl.getShaderInfoLog(shader));
+        return null;
+      }
+
+      return shader;
+    }
+
+    function setupShaders() {
+      var vertexShader = loadShaderFromDOM("shader-vs");
+      var fragmentShader = loadShaderFromDOM("shader-fs");
+
+      shaderProgram = gl.createProgram();
+      gl.attachShader(shaderProgram, vertexShader);
+      gl.attachShader(shaderProgram, fragmentShader);
+      gl.linkProgram(shaderProgram);
+
+      if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+        alert("Failed to setup shaders");
+      }
+
+      gl.useProgram(shaderProgram);
+
+      shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+      shaderProgram.vertexColorAttribute = gl.getAttribLocation(shaderProgram, "aVertexColor");
+
+      shaderProgram.uniformMVMatrix = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+      shaderProgram.uniformProjMatrix = gl.getUniformLocation(shaderProgram, "uPMatrix");
+
+      // Initialise the matrices
+      modelViewMatrix = mat4.create();
+      projectionMatrix = mat4.create();
+      modelViewMatrixStack = [];
+
+      gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+    }
+
+    function pushModelViewMatrix() {
+      var copyToPush = mat4.create(modelViewMatrix);
+      modelViewMatrixStack.push(copyToPush);
+    }
+
+    function popModelViewMatrix() {
+      if (modelViewMatrixStack.length == 0) {
+        throw "Error popModelViewMatrix() - Stack was empty ";
+      }
+      modelViewMatrix = modelViewMatrixStack.pop();
+    }
+
+    //SETUP OBJECT BUFFERS
+    function setupBuffers() {
+      //Add here the functions that setup the object buffers
+      setupEarthBuffers();
+    }
+
+    function uploadModelViewMatrixToShader() {
+      gl.uniformMatrix4fv(shaderProgram.uniformMVMatrix, false,
+    modelViewMatrix);
+    }
+
+    function uploadProjectionMatrixToShader() {
+      gl.uniformMatrix4fv(shaderProgram.uniformProjMatrix,
+    false, projectionMatrix);
+    }
+
+    function init() {
+      // Initialization that is performed during first startup and when the
+      // event webglcontextrestored is received is included in this function.
+      setupShaders();
+      setupBuffers();
+
+      gl.clearColor(0.0, 0.0, 0.0, 1.0); //Clears the screen with white color
+      gl.enable(gl.DEPTH_TEST); //Determine WebGL Capabilities
+
+      // Initialize some variables related to the animation
+      //pwgl.animationStartTime = undefined;
+      //pwgl.nbrOfFramesForFPS = 0;
+      //pwgl.previousFrameTimeStamp = Date.now();
+
+      gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+      //mat4.perspective(60, gl.viewportWidth / gl.viewportHeight, 1, 100.0, pwgl.projectionMatrix);
+      //mat4.identity(pwgl.modelViewMatrix);
+      //mat4.lookAt([8, 12, 8],[0, 0, 0], [0, 1,0], pwgl.modelViewMatrix);
+    }
+
+    //MAIN DRAW FUNCTION
+    function draw() {
+      gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+      mat4.perspective(60, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, projectionMatrix);
+      mat4.identity(modelViewMatrix);
+      mat4.lookAt([8, 5, -10],[0, 0, 0], [0, 1,0], modelViewMatrix); //Camera lookAt coordenates
+
+      uploadModelViewMatrixToShader();
+      uploadProjectionMatrixToShader();
+
+      //DRAW OBJECTS AND UPLOAD MATRICES
+      pushModelViewMatrix();
+      mat4.translate(modelViewMatrix, [0.0, 1.1, 0.0], modelViewMatrix);
+      uploadModelViewMatrixToShader();
+      drawEarth(0.12, 0.5, 0.001, 1.0);
+      popModelViewMatrix();
+    }
+
+    function startup() {
+      canvas = document.getElementById("myGLCanvas"); //Get canvas from DOM
+      gl = WebGLDebugUtils.makeDebugContext(createGLContext(canvas)); //Create the context of the canvas
+
+      //SETUP SHADERS AND BUFFERS
+      setupShaders();
+      setupBuffers();
+
+      gl = createGLContext(canvas);
+      init();
+
+      draw(); //Run Draw Function
+    }
+  </script>
+
+</head>
+
+<body onload="startup();">
+  <canvas id="myGLCanvas" width="500" height="500"></canvas>
+  <div id="fps-counter"> FPS: <span id="fps">--</span></div>
+</body>
+
+</html>
