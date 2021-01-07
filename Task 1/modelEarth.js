@@ -35,11 +35,11 @@ function setupEarthBuffers(){
   earthVertexIndexBuffer.numberOfItems = 36;
 }
 
-function drawEarth(r, g, b, a){
+function drawEarth(rgba){
   // Disable vertex attrib array and use constant color for the earth.
   gl.disableVertexAttribArray(shaderProgram.vertexColorAttribute);
   // Set color
-  gl.vertexAttrib4f(shaderProgram.vertexColorAttribute, r, g, b, a);
+  gl.vertexAttrib4f(shaderProgram.vertexColorAttribute, rgba[0], rgba[1], rgba[2], rgba[3]);
   gl.bindBuffer(gl.ARRAY_BUFFER, earthVertexPositionBuffer);
   gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, earthVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
