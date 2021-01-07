@@ -38,7 +38,7 @@ function setupSatelliteBodyBuffers(){
 
 //------------- DRAW MODELS --------------------
 function drawSatelliteBody(rgba){
-  // Disable vertex attrib array and use constant color for the satBody.
+  // Disable vertex attrib array and use constant color for the rod.
   gl.disableVertexAttribArray(shaderProgram.vertexColorAttribute);
   // Set color
   gl.vertexAttrib4f(shaderProgram.vertexColorAttribute, rgba[0], rgba[1], rgba[2], rgba[3]);
