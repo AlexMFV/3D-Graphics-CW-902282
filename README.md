@@ -18,7 +18,7 @@ Coursework done for the 3D Graphics Module 2020/2021
 		- [ ] Rotating around it's **vertical** axis
 	- [ ] Satellite Model
 		- ✅ Main Body is a cube of size 2x2x2
-			- [ ] One part of the body is black in colour
+			- ✅ One part of the body is black in colour
 				- [ ] This side **will always face earth**
 		- ✅ Two **solar panels** attached to each side of main body:
 			- ✅ Connected with ***GOLDEN*** **Rods** to the body

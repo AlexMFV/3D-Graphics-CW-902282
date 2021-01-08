@@ -52,6 +52,7 @@
     //Satellite
     var satBodyVertexPositionBuffer;
     var satBodyVertexIndexBuffer;
+    var satBodyVertexColorBuffer;
 
     //Solar Panels
     var solarPanelVertexPositionBuffer;
@@ -151,6 +152,7 @@
 
       shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
       shaderProgram.vertexColorAttribute = gl.getAttribLocation(shaderProgram, "aVertexColor");
+      gl.enableVertexAttribArray(shaderProgram.vertexColorAttribute);
 
       shaderProgram.uniformMVMatrix = gl.getUniformLocation(shaderProgram, "uMVMatrix");
       shaderProgram.uniformProjMatrix = gl.getUniformLocation(shaderProgram, "uPMatrix");
@@ -208,8 +210,8 @@
       //pwgl.nbrOfFramesForFPS = 0;
       //pwgl.previousFrameTimeStamp = Date.now();
 
-      gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+      gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
 
       //mat4.perspective(120, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, projectionMatrix);
       mat4.perspective(60, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, projectionMatrix);

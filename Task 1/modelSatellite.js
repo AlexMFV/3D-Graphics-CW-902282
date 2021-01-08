@@ -34,16 +34,33 @@ function setupSatelliteBodyBuffers(){
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(satBodyVertexIndices), gl.STATIC_DRAW);
   satBodyVertexIndexBuffer.itemSize = 1;
   satBodyVertexIndexBuffer.numberOfItems = 36;
+
+  const colors = [
+    1.0,  1.0,  1.0,  1.0,    // white
+    1.0,  1.0,  1.0,  1.0,    // white
+    1.0,  1.0,  1.0,  1.0,    // white
+    1.0,  1.0,  1.0,  1.0,    // white
+    0.0,  0.0,  0.0,  1.0,    // black
+    0.0,  0.0,  0.0,  1.0,    // black
+    0.0,  0.0,  0.0,  1.0,    // black
+    0.0,  0.0,  0.0,  1.0,    // black
+  ];
+
+  satBodyVertexColorBuffer = gl.createBuffer();
+  satBodyVertexColorBuffer.colorSize = 4;
+  gl.bindBuffer(gl.ARRAY_BUFFER, satBodyVertexColorBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
 }
 
 //------------- DRAW MODELS --------------------
 function drawSatelliteBody(rgba){
-  // Disable vertex attrib array and use constant color for the rod.
-  gl.disableVertexAttribArray(shaderProgram.vertexColorAttribute);
-  // Set color
-  gl.vertexAttrib4f(shaderProgram.vertexColorAttribute, rgba[0], rgba[1], rgba[2], rgba[3]);
   gl.bindBuffer(gl.ARRAY_BUFFER, satBodyVertexPositionBuffer);
   gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, satBodyVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+  gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, satBodyVertexColorBuffer);
+  gl.enableVertexAttribArray(shaderProgram.vertexColorAttribute);
+  gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, satBodyVertexColorBuffer.colorSize, gl.FLOAT, true, 0, 0);
 
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, satBodyVertexIndexBuffer);
   gl.drawElements(gl.TRIANGLES, satBodyVertexIndexBuffer.numberOfItems, gl.UNSIGNED_SHORT, 0);
