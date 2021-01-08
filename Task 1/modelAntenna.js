@@ -10,22 +10,18 @@ function setupAntennaBuffers(){
 
   for (j = 0; j <= cir_quality; j++)
   {
-    point = j * 2 * Math.PI / cir_quality;
-    sine = Math.sin(point)/2;
-    cosine = Math.cos(point)/2;
-    earthVertexPosition.push(sine);   // X
-    earthVertexPosition.push(cosine); // Y
-    earthVertexPosition.push(0);      // Z
-  }
-
-  for (j = 0; j <= cir_quality; j++)
-  {
-    point = j * 2 * Math.PI / cir_quality;
+    point = (j-3) * Math.PI/2 / cir_quality;
     sine = Math.sin(point)*2;
     cosine = Math.cos(point)*2;
-    earthVertexPosition.push(sine);   // X
-    earthVertexPosition.push(cosine); // Y
-    earthVertexPosition.push(-0.5);      // Z
+    for (i = 0; i <= cir_quality; i++)
+    {
+      point2 = i * 2 * Math.PI / cir_quality;
+      sine2 = Math.sin(point2);
+      cosine2 = Math.cos(point2);
+      earthVertexPosition.push(sine2 * sine);  // X
+      earthVertexPosition.push(cosine);       // Y
+      earthVertexPosition.push(cosine2 * sine);  // Z
+    }
   }
 
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(earthVertexPosition), gl.STATIC_DRAW);
@@ -41,14 +37,14 @@ function setupAntennaBuffers(){
   {
     for (i = 0; i < cir_quality; i++)
     {
-      p1 = j * (cir_quality+1) + i;
-      p2 = p1 + (cir_quality+1);
-      earthVertexIndices.push(p1);
-      earthVertexIndices.push(p2);
-      earthVertexIndices.push(p1 + 1);
-      earthVertexIndices.push(p1 + 1);
-      earthVertexIndices.push(p2);
-      earthVertexIndices.push(p2 + 1);
+      v1 = j * (cir_quality+1) + i;
+      v2 = v1 + (cir_quality+1);
+      earthVertexIndices.push(v1);
+      earthVertexIndices.push(v2);
+      earthVertexIndices.push(v1 + 1);
+      earthVertexIndices.push(v1 + 1);
+      earthVertexIndices.push(v2);
+      earthVertexIndices.push(v2 + 1);
     }
   }
 
@@ -58,7 +54,6 @@ function setupAntennaBuffers(){
 }
 
 function drawAntenna(rgba){
-  // Disable vertex attrib array and use constant color for the earth.
   gl.disableVertexAttribArray(shaderProgram.vertexColorAttribute);
   // Set color
   gl.vertexAttrib4f(shaderProgram.vertexColorAttribute, rgba[0], rgba[1], rgba[2], rgba[3]);
