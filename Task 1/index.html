@@ -8,6 +8,7 @@
   <script type="text/javascript" src="modelEarth.js"></script>
   <script type="text/javascript" src="modelSatellite.js"></script>
   <script type="text/javascript" src="modelSolarPanel.js"></script>
+  <script type="text/javascript" src="modelAntenna.js"></script>
   <script type="text/javascript" src="common.js"></script>
   <!--<meta http-equiv="refresh" content="1" >-->
   <meta charset="utf-8">
@@ -58,7 +59,11 @@
 
     //Gold Rods
     var rodVertexPositionBuffer;
-    var rodVertexIndexBuffer
+    var rodVertexIndexBuffer;
+
+    //Antenna
+    var antennaVertexPositionBuffer;
+    var antennaVertexIndexBuffer;
 
     var modelViewMatrix;
     var projectionMatrix;
@@ -176,17 +181,17 @@
       setupEarthBuffers();
       setupSatelliteBodyBuffers();
       setupSolarPanelBuffers();
-      setupRodBuffers();
+      setupMainRodBuffers();
+      setupAntennaRodBuffers();
+      setupAntennaBuffers();
     }
 
     function uploadModelViewMatrixToShader() {
-      gl.uniformMatrix4fv(shaderProgram.uniformMVMatrix, false,
-    modelViewMatrix);
+      gl.uniformMatrix4fv(shaderProgram.uniformMVMatrix, false, modelViewMatrix);
     }
 
     function uploadProjectionMatrixToShader() {
-      gl.uniformMatrix4fv(shaderProgram.uniformProjMatrix,
-    false, projectionMatrix);
+      gl.uniformMatrix4fv(shaderProgram.uniformProjMatrix, false, projectionMatrix);
     }
 
     function init() {
@@ -206,9 +211,12 @@
       gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-      //mat4.perspective(60, gl.viewportWidth / gl.viewportHeight, 1, 50.0, pwgl.projectionMatrix);
-      //mat4.identity(modelViewMatrix);
-      //mat4.lookAt([8, 12, 8],[0, 0, 0], [0, 1,0], modelViewMatrix);
+      //mat4.perspective(120, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, projectionMatrix);
+      mat4.perspective(60, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, projectionMatrix);
+      mat4.identity(modelViewMatrix);
+      mat4.lookAt([8, 5, -15],[0, 0, 0], [0, 1,0], modelViewMatrix); //Default Camera
+      //mat4.lookAt([0, 0, -15], [0, 0, 0], [0, 1, 0], modelViewMatrix) //Front Camera
+      //mat4.lookAt([0, 0, -15], [0, 0, 0], [0, 1, 0], modelViewMatrix) //Side Camera
     }
 
     //MAIN DRAW FUNCTION
@@ -216,25 +224,27 @@
       gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-      mat4.perspective(60, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, projectionMatrix);
-      mat4.identity(modelViewMatrix);
-      mat4.lookAt([8, 5, -10],[0, 0, 0], [0, 1,0], modelViewMatrix); //Camera lookAt coordinates
-
       uploadModelViewMatrixToShader();
       uploadProjectionMatrixToShader();
 
-      //DRAW OBJECTS AND UPLOAD MATRICES
-      //drawFunction(drawEarth, [0.0, 0.0, 0.0], [0.12, 0.5, 0.0, 1.0]);
+      //Earth and earth size
+      /*pushModelViewMatrix();
+      mat4.scale(modelViewMatrix, [10.0, 10.0, 10.0]); //Since the diameter of the sphere is 2, we multiply by 10 to achieve 20 diameter
+      drawFunction(drawEarth, [0.0, 0.0, 0.0], [0.12, 0.5, 0.0, 1.0], false);
+      popModelViewMatrix();*/
 
       //FULL SATELLITE AND UNCOMMENT LINES TO FULLY ROTATE THE SATELLITE
-      //pushModelViewMatrix();
+      pushModelViewMatrix();
+      //mat4.translate(modelViewMatrix, [0.0, 15.0, 0.0]);
       //mat4.rotate(modelViewMatrix, toRadians(90), [0.0, 0.1, 0.0]);
-      drawFunction(drawSolarPanel, [-3.2, 0.0, 0.0], [0.4, 0.7, 1.0, 1.0], rotationC(true, [-45], [axisType.x])); //rotationC(true, [-45], [axisType.x]));
-      drawFunction(drawSolarPanel, [1.9, 0.0, 0.0], [0.4, 0.7, 1.0, 1.0], rotationC(true, [-45], [axisType.x])); //rotationC(true, [-45], [axisType.x]));
-      drawFunction(drawRod, [-2.2, 0.0, 0.0], [0.89, 0.772, 0, 1.0], rotationC(true, [90], [axisType.y]));
-      drawFunction(drawRod, [0.9, 0.0, 0.0], [0.89, 0.772, 0, 1.0], rotationC(true, [90], [axisType.y]));
-      drawFunction(drawSatelliteBody, [-0.6, 0.0, 0.0], [0.8, 0.8, 0.8, 1.0], false);//rotationC(true, [45], [axisType.x]))
-      //popModelViewMatrix();
+      drawFunction(drawSolarPanel, [-2.5, 0.0, 0.0], [0.4, 0.7, 1.0, 0.9], rotationC(true, [-45], [axisType.x])); //rotationC(true, [-45], [axisType.x]));
+      drawFunction(drawSolarPanel, [2.5, 0.0, 0.0], [0.4, 0.7, 1.0, 0.9], rotationC(true, [-45], [axisType.x])); //rotationC(true, [-45], [axisType.x]));
+      drawFunction(drawMainRod, [-1.5, 0.0, 0.0], [0.89, 0.772, 0, 1.0], rotationC(true, [90], [axisType.y]));
+      drawFunction(drawMainRod, [1.5, 0.0, 0.0], [0.89, 0.772, 0, 1.0], rotationC(true, [90], [axisType.y]));
+      drawFunction(drawSatelliteBody, [0, 0.0, 0.0], [0.8, 0.8, 0.8, 1.0], false);//rotationC(true, [45], [axisType.x]))
+      drawFunction(drawAntennaRod, [0.0, 0.0, -1.5], [0.89, 0.772, 0, 1.0], false);
+      drawFunction(drawAntenna, [0.0, 0.0, -2.0], [0.79, 0.672, 0, 1.0], false); //[0.89, 0.772, 0, 1.0], false);
+      popModelViewMatrix();
     }
 
     function startup() {

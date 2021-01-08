@@ -13,7 +13,7 @@ Coursework done for the 3D Graphics Module 2020/2021
  ### Task 1:
 - [ ] Animation of **planet earth** with a **satellite orbiting** and a **light scene** ***at 60 degrees***:
 	- [ ] Earth Model
-		- [ ] Main Model is a **Sphere of radius 10**
+		- ✅ Main Model is a **Sphere of radius 10**
 		- [ ] Earth Mapped with Earth Image
 		- [ ] Rotating around it's **vertical** axis
 	- [ ] Satellite Model
@@ -26,9 +26,9 @@ Coursework done for the 3D Graphics Module 2020/2021
 			- ✅ Solar Panels are a ***blueish*** color
 			- ✅ Consist of 1x2 **rectangular objects**
 			- ✅ Always facing upwards (for simplicity)
-		- [ ] A **golden antenna dish of diameter 4**
-			- [ ] Attached to the black side of the main body by a **Golden Rod**
-				- [ ] This Rod will have a size of **0.2x0.2x0.4**
+		- ✅ A **golden antenna dish of diameter 4**
+			- ✅ Attached to the black side of the main body by a **Golden Rod**
+				- ✅ This Rod will have a size of **0.2x0.2x0.4**
 			- [ ] The antenna will **always face** earth
 		- [ ] Should orbit around the earth with on side always facing it.
 	- [ ] Lighting
