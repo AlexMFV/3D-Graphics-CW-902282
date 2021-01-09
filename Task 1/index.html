@@ -5,26 +5,30 @@
   <script src="webgl-debug.js"></script>
   <script type="text/javascript" src="glMatrix.js"></script>
   <script src="webgl-utils.js"></script>
+  <script type="text/javascript" src="textures.js"></script>
+  <script type="text/javascript" src="common.js"></script>
   <script type="text/javascript" src="modelEarth.js"></script>
   <script type="text/javascript" src="modelSatellite.js"></script>
   <script type="text/javascript" src="modelSolarPanel.js"></script>
   <script type="text/javascript" src="modelAntenna.js"></script>
-  <script type="text/javascript" src="common.js"></script>
   <!--<meta http-equiv="refresh" content="1" >-->
   <meta charset="utf-8">
 
   <script id="shader-vs" type="x-shader/x-vertex">
+    varying vec4 vColor;
     attribute vec3 aVertexPosition;
     attribute vec4 aVertexColor;
+    attribute vec2 aTextureCoordinates;
 
     uniform mat4 uMVMatrix;
     uniform mat4 uPMatrix;
 
-    varying vec4 vColor;
+    varying vec2 vTextureCoordinates;
 
     void main() {
       gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
       vColor = aVertexColor;
+      vTextureCoordinates = aTextureCoordinates;
     }
   </script>
 
@@ -32,8 +36,11 @@
     precision mediump float;
     varying vec4 vColor;
 
+    varying vec2 vTextureCoordinates;
+    uniform sampler2D uSampler;
+
     void main() {
-      gl_FragColor = vColor;
+        gl_FragColor = texture2D(uSampler, vTextureCoordinates) + vColor;// + vColor; //vColor
     }
   </script>
 
@@ -42,33 +49,8 @@
     var gl;
     var pwgl = {};
     var canvas;
-    var shaderProgram;
 
-    //Adding new global variables:
-    //Earth
-    var earthVertexPositionBuffer;
-    var earthVertexIndexBuffer;
-
-    //Satellite
-    var satBodyVertexPositionBuffer;
-    var satBodyVertexIndexBuffer;
-    var satBodyVertexColorBuffer;
-
-    //Solar Panels
-    var solarPanelVertexPositionBuffer;
-    var solarPanelVertexIndexBuffer;
-
-    //Gold Rods
-    var rodVertexPositionBuffer;
-    var rodVertexIndexBuffer;
-
-    //Antenna
-    var antennaVertexPositionBuffer;
-    var antennaVertexIndexBuffer;
-
-    var modelViewMatrix;
-    var projectionMatrix;
-    var modelViewMatrixStack;
+    pwgl.ongoingImageLoads = [];
 
     function createGLContext(canvas) {
       var names = ["webgl", "experimental-webgl"];
@@ -150,31 +132,35 @@
 
       gl.useProgram(shaderProgram);
 
-      shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
-      shaderProgram.vertexColorAttribute = gl.getAttribLocation(shaderProgram, "aVertexColor");
-      gl.enableVertexAttribArray(shaderProgram.vertexColorAttribute);
+      pwgl.vertexPositionAttributeLoc = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+      pwgl.vertexColorAttributeLoc = gl.getAttribLocation(shaderProgram, "aVertexColor");
+      pwgl.vertexTextureAttributeLoc = gl.getAttribLocation(shaderProgram, "aTextureCoordinates");
 
-      shaderProgram.uniformMVMatrix = gl.getUniformLocation(shaderProgram, "uMVMatrix");
-      shaderProgram.uniformProjMatrix = gl.getUniformLocation(shaderProgram, "uPMatrix");
+      pwgl.uniformMVMatrixLoc = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+      pwgl.uniformProjMatrixLoc = gl.getUniformLocation(shaderProgram, "uPMatrix");
+      pwgl.uniformSamplerLoc = gl.getUniformLocation(shaderProgram, "uSampler");
+
+      gl.enableVertexAttribArray(pwgl.vertexColorAttributeLoc);
+      gl.enableVertexAttribArray(pwgl.vertexPositionAttributeLoc);
+      gl.enableVertexAttribArray(pwgl.vertexTextureAttributeLoc);
 
       // Initialise the matrices
-      modelViewMatrix = mat4.create();
-      projectionMatrix = mat4.create();
-      modelViewMatrixStack = [];
+      pwgl.modelViewMatrix = mat4.create();
+      pwgl.projectionMatrix = mat4.create();
+      pwgl.modelViewMatrixStack = [];
 
-      gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
     }
 
     function pushModelViewMatrix() {
-      var copyToPush = mat4.create(modelViewMatrix);
-      modelViewMatrixStack.push(copyToPush);
+      var copyToPush = mat4.create(pwgl.modelViewMatrix);
+      pwgl.modelViewMatrixStack.push(copyToPush);
     }
 
     function popModelViewMatrix() {
-      if (modelViewMatrixStack.length == 0) {
+      if (pwgl.modelViewMatrixStack.length == 0) {
         throw "Error popModelViewMatrix() - Stack was empty ";
       }
-      modelViewMatrix = modelViewMatrixStack.pop();
+      pwgl.modelViewMatrix = pwgl.modelViewMatrixStack.pop();
     }
 
     //SETUP OBJECT BUFFERS
@@ -189,20 +175,55 @@
     }
 
     function uploadModelViewMatrixToShader() {
-      gl.uniformMatrix4fv(shaderProgram.uniformMVMatrix, false, modelViewMatrix);
+      gl.uniformMatrix4fv(pwgl.uniformMVMatrixLoc, false, pwgl.modelViewMatrix);
     }
 
     function uploadProjectionMatrixToShader() {
-      gl.uniformMatrix4fv(shaderProgram.uniformProjMatrix, false, projectionMatrix);
+      gl.uniformMatrix4fv(pwgl.uniformProjMatrixLoc, false, pwgl.projectionMatrix);
     }
 
-    function init() {
-      // Initialization that is performed during first startup and when the
-      // event webglcontextrestored is received is included in this function.
+    //MAIN DRAW FUNCTION
+    function draw() {
+      gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+      uploadModelViewMatrixToShader();
+      uploadProjectionMatrixToShader();
+      gl.uniform1i(pwgl.uniformSamplerLoc, 0);
+
+      //Earth and earth size
+      pushModelViewMatrix();
+      mat4.scale(pwgl.modelViewMatrix, [10.0, 10.0, 10.0]); //Since the diameter of the sphere is 2, we multiply by 10 to achieve 20 diameter
+      drawFunction(drawEarth, [0.0, 0.0, 0.0], [0.12, 0.5, 0.0, 1.0], false);
+      popModelViewMatrix();
+
+      //FULL SATELLITE AND UNCOMMENT LINES TO FULLY ROTATE THE SATELLITE
+      pushModelViewMatrix();
+      mat4.translate(pwgl.modelViewMatrix, [0.0, 15.0, 0.0]);
+      //mat4.rotate(modelViewMatrix, toRadians(90), [0.0, 0.1, 0.0]);
+      drawFunction(drawSolarPanel, [-2.5, 0.0, 0.0], [0.4, 0.7, 1.0, 0.9], rotationC(true, [-45], [axisType.x])); //rotationC(true, [-45], [axisType.x]));
+      drawFunction(drawSolarPanel, [2.5, 0.0, 0.0], [0.4, 0.7, 1.0, 0.9], rotationC(true, [-45], [axisType.x])); //rotationC(true, [-45], [axisType.x]));
+      drawFunction(drawMainRod, [-1.5, 0.0, 0.0], [0.89, 0.772, 0, 1.0], rotationC(true, [90], [axisType.y]));
+      drawFunction(drawMainRod, [1.5, 0.0, 0.0], [0.89, 0.772, 0, 1.0], rotationC(true, [90], [axisType.y]));
+      drawFunction(drawSatelliteBody, [0, 0.0, 0.0], [0.8, 0.8, 0.8, 1.0], false);//rotationC(true, [45], [axisType.x]))
+      drawFunction(drawAntennaRod, [0.0, 0.0, -1.5], [0.89, 0.772, 0, 1.0], false);
+      drawFunction(drawAntenna, [0.0, 0.0, -3.5], [0.69, 0.572, 0, 1.0], rotationC(true, [90], [axisType.x])); //[0.89, 0.772, 0, 1.0], false);
+      popModelViewMatrix();
+
+      //pwgl.requestId = requestAnimFrame(draw,canvas);
+    }
+
+    function startup() {
+      canvas = document.getElementById("myCanvas"); //Get canvas from DOM
+      gl = WebGLDebugUtils.makeDebugContext(createGLContext(canvas)); //Create the context of the canvas
+
+      gl = createGLContext(canvas);
+      //SETUP SHADERS AND BUFFERS
       setupShaders();
       setupBuffers();
+      setupTextures();
 
-      gl.clearColor(0.0, 0.0, 0.0, 1.0); //Clears the screen with white color
+      gl.clearColor(0.0, 1.0, 1.0, 1.0); //Clears the screen with white color
       gl.enable(gl.DEPTH_TEST); //Determine WebGL Capabilities
 
       // Initialize some variables related to the animation
@@ -213,52 +234,12 @@
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
       gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
 
-      //mat4.perspective(120, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, projectionMatrix);
-      mat4.perspective(60, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, projectionMatrix);
-      mat4.identity(modelViewMatrix);
-      mat4.lookAt([8, 5, -15],[0, 0, 0], [0, 1,0], modelViewMatrix); //Default Camera
+      mat4.perspective(120, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pwgl.projectionMatrix);
+      //mat4.perspective(60, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, projectionMatrix);
+      mat4.identity(pwgl.modelViewMatrix);
+      mat4.lookAt([8, 5, -15],[0, 0, 0], [0, 1,0], pwgl.modelViewMatrix); //Default Camera
       //mat4.lookAt([0, 0, -15], [0, 0, 0], [0, 1, 0], modelViewMatrix) //Front Camera
       //mat4.lookAt([0, 0, -15], [0, 0, 0], [0, 1, 0], modelViewMatrix) //Side Camera
-    }
-
-    //MAIN DRAW FUNCTION
-    function draw() {
-      gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-      uploadModelViewMatrixToShader();
-      uploadProjectionMatrixToShader();
-
-      //Earth and earth size
-      /*pushModelViewMatrix();
-      mat4.scale(modelViewMatrix, [10.0, 10.0, 10.0]); //Since the diameter of the sphere is 2, we multiply by 10 to achieve 20 diameter
-      drawFunction(drawEarth, [0.0, 0.0, 0.0], [0.12, 0.5, 0.0, 1.0], false);
-      popModelViewMatrix();*/
-
-      //FULL SATELLITE AND UNCOMMENT LINES TO FULLY ROTATE THE SATELLITE
-      pushModelViewMatrix();
-      //mat4.translate(modelViewMatrix, [0.0, 15.0, 0.0]);
-      //mat4.rotate(modelViewMatrix, toRadians(90), [0.0, 0.1, 0.0]);
-      drawFunction(drawSolarPanel, [-2.5, 0.0, 0.0], [0.4, 0.7, 1.0, 0.9], rotationC(true, [-45], [axisType.x])); //rotationC(true, [-45], [axisType.x]));
-      drawFunction(drawSolarPanel, [2.5, 0.0, 0.0], [0.4, 0.7, 1.0, 0.9], rotationC(true, [-45], [axisType.x])); //rotationC(true, [-45], [axisType.x]));
-      drawFunction(drawMainRod, [-1.5, 0.0, 0.0], [0.89, 0.772, 0, 1.0], rotationC(true, [90], [axisType.y]));
-      drawFunction(drawMainRod, [1.5, 0.0, 0.0], [0.89, 0.772, 0, 1.0], rotationC(true, [90], [axisType.y]));
-      drawFunction(drawSatelliteBody, [0, 0.0, 0.0], [0.8, 0.8, 0.8, 1.0], false);//rotationC(true, [45], [axisType.x]))
-      drawFunction(drawAntennaRod, [0.0, 0.0, -1.5], [0.89, 0.772, 0, 1.0], false);
-      drawFunction(drawAntenna, [0.0, 0.0, -3.5], [0.69, 0.572, 0, 1.0], rotationC(true, [90], [axisType.x])); //[0.89, 0.772, 0, 1.0], false);
-      popModelViewMatrix();
-    }
-
-    function startup() {
-      canvas = document.getElementById("myCanvas"); //Get canvas from DOM
-      gl = WebGLDebugUtils.makeDebugContext(createGLContext(canvas)); //Create the context of the canvas
-
-      //SETUP SHADERS AND BUFFERS
-      setupShaders();
-      setupBuffers();
-
-      gl = createGLContext(canvas);
-      init();
 
       draw(); //Run Draw Function
     }

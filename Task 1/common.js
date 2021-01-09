@@ -5,7 +5,7 @@ function toRadians(deg){
 
 function drawFunction(method, vec3Translate, rgbs, opts){
   pushModelViewMatrix();
-  mat4.translate(modelViewMatrix, vec3Translate, modelViewMatrix);
+  mat4.translate(pwgl.modelViewMatrix, vec3Translate, pwgl.modelViewMatrix);
   if(opts[0])
     rotation(opts[1], opts[2]);
   uploadModelViewMatrixToShader();
@@ -16,9 +16,9 @@ function drawFunction(method, vec3Translate, rgbs, opts){
 function rotation(degs, allAxis){
   for(let i = 0; i < degs.length; i++){
     switch(allAxis[i]){
-      case axisType.x: mat4.rotate(modelViewMatrix, toRadians(degs[i]), [1.0, 0.0, 0.0]); break;
-      case axisType.y: mat4.rotate(modelViewMatrix, toRadians(degs[i]), [0.0, 1.0, 0.0]); break;
-      case axisType.z: mat4.rotate(modelViewMatrix, toRadians(degs[i]), [0.0, 0.0, 1.0]); break;
+      case axisType.x: mat4.rotate(pwgl.modelViewMatrix, toRadians(degs[i]), [1.0, 0.0, 0.0]); break;
+      case axisType.y: mat4.rotate(pwgl.modelViewMatrix, toRadians(degs[i]), [0.0, 1.0, 0.0]); break;
+      case axisType.z: mat4.rotate(pwgl.modelViewMatrix, toRadians(degs[i]), [0.0, 0.0, 1.0]); break;
     }
   }
 }

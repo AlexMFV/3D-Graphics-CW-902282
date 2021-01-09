@@ -14,7 +14,7 @@ Coursework done for the 3D Graphics Module 2020/2021
 - [ ] Animation of **planet earth** with a **satellite orbiting** and a **light scene** ***at 60 degrees***:
 	- [ ] Earth Model
 		- ✅ Main Model is a **Sphere of radius 10**
-		- [ ] Earth Mapped with Earth Image
+		- ❌ Earth Mapped with Earth Image (NOT WORKING)
 		- [ ] Rotating around it's **vertical** axis
 	- [ ] Satellite Model
 		- ✅ Main Body is a cube of size 2x2x2

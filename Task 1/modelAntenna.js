@@ -1,12 +1,12 @@
 function setupAntennaBuffers(){
-  earthVertexPositionBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, earthVertexPositionBuffer);
+  pwgl.antennaVertexPositionBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.antennaVertexPositionBuffer);
 
   var cir_quality = 20; //Quality that the sphere is rendered/ Number of vertices per half sphere
-  var i, ai, si, ci;
-  var j, aj, sj, cj;
-  var p1, p2;
-  var earthVertexPosition = [];
+  //var i, ai, si, ci;
+  //var j, aj, sj, cj;
+  //var p1, p2;
+  var antennaVertexPosition = [];
 
   for (j = 0; j <= cir_quality; j++)
   {
@@ -18,48 +18,49 @@ function setupAntennaBuffers(){
       point2 = i * 2 * Math.PI / cir_quality;
       sine2 = Math.sin(point2);
       cosine2 = Math.cos(point2);
-      earthVertexPosition.push(sine2 * sine);  // X
-      earthVertexPosition.push(cosine);       // Y
-      earthVertexPosition.push(cosine2 * sine);  // Z
+      antennaVertexPosition.push(sine2 * sine);  // X
+      antennaVertexPosition.push(cosine);       // Y
+      antennaVertexPosition.push(cosine2 * sine);  // Z
     }
   }
 
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(earthVertexPosition), gl.STATIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(antennaVertexPosition), gl.STATIC_DRAW);
 
-  earthVertexPositionBuffer.itemSize = 3;
-  earthVertexPositionBuffer.numberOfItems = Math.pow(cir_quality, 2)*3;
+  pwgl.ANTENNA_VERTEX_POS_BUF_ITEM_SIZE = 3;
+  pwgl.ANTENNA_VERTEX_POS_BUF_NUM_ITEMS = Math.pow(cir_quality, 2)*3;
 
-  earthVertexIndexBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, earthVertexIndexBuffer);
+  pwgl.antennaVertexIndexBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.antennaVertexIndexBuffer);
 
-  var earthVertexIndices = [];
+  var antennaVertexIndices = [];
   for (j = 0; j < cir_quality; j++)
   {
     for (i = 0; i < cir_quality; i++)
     {
       v1 = j * (cir_quality+1) + i;
       v2 = v1 + (cir_quality+1);
-      earthVertexIndices.push(v1);
-      earthVertexIndices.push(v2);
-      earthVertexIndices.push(v1 + 1);
-      earthVertexIndices.push(v1 + 1);
-      earthVertexIndices.push(v2);
-      earthVertexIndices.push(v2 + 1);
+      antennaVertexIndices.push(v1);
+      antennaVertexIndices.push(v2);
+      antennaVertexIndices.push(v1 + 1);
+      antennaVertexIndices.push(v1 + 1);
+      antennaVertexIndices.push(v2);
+      antennaVertexIndices.push(v2 + 1);
     }
   }
 
-  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(earthVertexIndices), gl.STATIC_DRAW);
-  earthVertexIndexBuffer.itemSize = 1;
-  earthVertexIndexBuffer.numberOfItems = Math.pow(cir_quality, 2)*6; //36;
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(antennaVertexIndices), gl.STATIC_DRAW);
+
+  pwgl.ANTENNA_VERTEX_INDEX_BUF_ITEM_SIZE = 1;
+  pwgl.ANTENNA_VERTEX_INDEX_BUF_NUM_ITEMS = Math.pow(cir_quality, 2)*6; //36;
 }
 
 function drawAntenna(rgba){
-  gl.disableVertexAttribArray(shaderProgram.vertexColorAttribute);
+  gl.disableVertexAttribArray(pwgl.vertexColorAttributeLoc);
   // Set color
-  gl.vertexAttrib4f(shaderProgram.vertexColorAttribute, rgba[0], rgba[1], rgba[2], rgba[3]);
-  gl.bindBuffer(gl.ARRAY_BUFFER, earthVertexPositionBuffer);
-  gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, earthVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+  gl.vertexAttrib4f(pwgl.vertexColorAttributeLoc, rgba[0], rgba[1], rgba[2], rgba[3]);
+  gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.antennaVertexPositionBuffer);
+  gl.vertexAttribPointer(pwgl.vertexPositionAttributeLoc, pwgl.ANTENNA_VERTEX_POS_BUF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
 
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, earthVertexIndexBuffer);
-  gl.drawElements(gl.TRIANGLES, earthVertexIndexBuffer.numberOfItems, gl.UNSIGNED_SHORT, 0);
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.antennaVertexIndexBuffer);
+  gl.drawElements(gl.TRIANGLES, pwgl.ANTENNA_VERTEX_INDEX_BUF_NUM_ITEMS, gl.UNSIGNED_SHORT, 0);
 }
