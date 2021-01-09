@@ -42,6 +42,20 @@
   }
   </script>
 
+  <script id="shader-vs2" type="x-shader/x-vertex">
+  attribute vec3 aVertexPosition;
+  attribute vec4 aVertexColor;
+  varying vec4 vColor;
+
+  uniform mat4 uMVMatrix;
+  uniform mat4 uPMatrix;
+
+  void main() {
+    gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+    vColor = aVertexColor;
+  }
+  </script>
+
   <script id="shader-fs" type="x-shader/x-fragment">
   precision mediump float;
   varying vec2 vTextureCoordinates;
@@ -73,6 +87,16 @@
     vec4 texelColor = texture2D(uSampler, vTextureCoordinates);
 
     gl_FragColor = vec4(lightWeighting.rgb * texelColor.rgb, texelColor.a);
+  }
+  </script>
+
+  <script id="shader-fs2" type="x-shader/x-fragment">
+  precision mediump float;
+
+  varying vec4 vColor;
+
+  void main() {
+    gl_FragColor = vColor;
   }
   </script>
 
@@ -152,36 +176,59 @@
     }
 
     function setupShaders() {
-      var vertexShader = loadShaderFromDOM("shader-vs");
-      var fragmentShader = loadShaderFromDOM("shader-fs");
+      var t_vertexShader = loadShaderFromDOM("shader-vs");
+      var t_fragmentShader = loadShaderFromDOM("shader-fs");
 
-      shaderProgram = gl.createProgram();
-      gl.attachShader(shaderProgram, vertexShader);
-      gl.attachShader(shaderProgram, fragmentShader);
-      gl.linkProgram(shaderProgram);
+      textureShaderProgram = gl.createProgram();
+      gl.attachShader(textureShaderProgram, t_vertexShader);
+      gl.attachShader(textureShaderProgram, t_fragmentShader);
+      gl.linkProgram(textureShaderProgram);
 
-      if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-        alert("Failed to setup shaders");
+      if (!gl.getProgramParameter(textureShaderProgram, gl.LINK_STATUS)) {
+        alert("Failed to setup texture shader!");
       }
 
-      gl.useProgram(shaderProgram);
+      var c_vertexShader = loadShaderFromDOM("shader-vs2");
+      var c_fragmentShader = loadShaderFromDOM("shader-fs2");
 
-      pwgl.vertexPositionAttributeLoc = gl.getAttribLocation(shaderProgram, "aVertexPosition");
-      pwgl.vertexTextureAttributeLoc = gl.getAttribLocation(shaderProgram, "aTextureCoordinates");
-      pwgl.uniformMVMatrixLoc = gl.getUniformLocation(shaderProgram, "uMVMatrix");
-      pwgl.uniformProjMatrixLoc = gl.getUniformLocation(shaderProgram, "uPMatrix");
-      pwgl.uniformSamplerLoc = gl.getUniformLocation(shaderProgram, "uSampler");
+      colorShaderProgram = gl.createProgram();
+      gl.attachShader(colorShaderProgram, c_vertexShader);
+      gl.attachShader(colorShaderProgram, c_fragmentShader);
+      gl.linkProgram(colorShaderProgram);
 
-      pwgl.uniformNormalMatrixLoc = gl.getUniformLocation(shaderProgram, "uNMatrix");
-      pwgl.vertexNormalAttributeLoc = gl.getAttribLocation(shaderProgram, "aVertexNormal");
-      pwgl.uniformLightPositionLoc =gl.getUniformLocation(shaderProgram, "uLightPosition");
-      pwgl.uniformAmbientLightColorLoc = gl.getUniformLocation(shaderProgram, "uAmbientLightColor");
-      pwgl.uniformDiffuseLightColorLoc = gl.getUniformLocation(shaderProgram, "uDiffuseLightColor");
-      pwgl.uniformSpecularLightColorLoc = gl.getUniformLocation(shaderProgram, "uSpecularLightColor");
+      if (!gl.getProgramParameter(colorShaderProgram, gl.LINK_STATUS)) {
+        alert("Failed to setup color shader!");
+      }
+
+      gl.useProgram(textureShaderProgram);
+      //gl.useProgram(colorShaderProgram);
+
+      pwgl.vertexPositionAttributeLoc = gl.getAttribLocation(textureShaderProgram, "aVertexPosition");
+      pwgl.vertexTextureAttributeLoc = gl.getAttribLocation(textureShaderProgram, "aTextureCoordinates");
+      pwgl.uniformMVMatrixLoc = gl.getUniformLocation(textureShaderProgram, "uMVMatrix");
+      pwgl.uniformProjMatrixLoc = gl.getUniformLocation(textureShaderProgram, "uPMatrix");
+      pwgl.uniformSamplerLoc = gl.getUniformLocation(textureShaderProgram, "uSampler");
+
+      pwgl.uniformNormalMatrixLoc = gl.getUniformLocation(textureShaderProgram, "uNMatrix");
+      pwgl.vertexNormalAttributeLoc = gl.getAttribLocation(textureShaderProgram, "aVertexNormal");
+      pwgl.uniformLightPositionLoc = gl.getUniformLocation(textureShaderProgram, "uLightPosition");
+      pwgl.uniformAmbientLightColorLoc = gl.getUniformLocation(textureShaderProgram, "uAmbientLightColor");
+      pwgl.uniformDiffuseLightColorLoc = gl.getUniformLocation(textureShaderProgram, "uDiffuseLightColor");
+      pwgl.uniformSpecularLightColorLoc = gl.getUniformLocation(textureShaderProgram, "uSpecularLightColor");
 
       gl.enableVertexAttribArray(pwgl.vertexNormalAttributeLoc);
       gl.enableVertexAttribArray(pwgl.vertexPositionAttributeLoc);
       gl.enableVertexAttribArray(pwgl.vertexTextureAttributeLoc);
+
+      gl.useProgram(colorShaderProgram);
+
+      pwgl.vertexColorAttributeLoc = gl.getAttribLocation(colorShaderProgram, "aVertexColor");
+      pwgl.vertexPositionAttributeLoc2 = gl.getAttribLocation(colorShaderProgram, "aVertexPosition");
+      pwgl.uniformMVMatrixLoc2 = gl.getUniformLocation(colorShaderProgram, "uMVMatrix");
+      pwgl.uniformProjMatrixLoc2 = gl.getUniformLocation(colorShaderProgram, "uPMatrix");
+
+      gl.enableVertexAttribArray(pwgl.vertexColorAttributeLoc);
+      gl.enableVertexAttribArray(pwgl.vertexPositionAttributeLoc2);
 
       // Initialise the matrices
       pwgl.modelViewMatrix = mat4.create();
@@ -209,35 +256,41 @@
       gl.uniformMatrix3fv(pwgl.uniformNormalMatrixLoc, false, normalMatrix);
     }
 
-    function uploadProjectionMatrixToShader() {
-      gl.uniformMatrix4fv(pwgl.uniformProjMatrixLoc, false,
-      pwgl.projectionMatrix);
-    }
-
     //SETUP OBJECT BUFFERS
     function setupBuffers() {
       //Add here the functions that setup the object buffers
-      setupEarthBuffers();
       setupSatelliteBodyBuffers();
       setupSolarPanelBuffers();
       setupMainRodBuffers();
       setupAntennaRodBuffers();
       setupAntennaBuffers();
+
+      setupEarthBuffers();
     }
 
     function setupLights(){
+      gl.useProgram(textureShaderProgram);
       gl.uniform3fv(pwgl.uniformLightPositionLoc, [0.0, 20.0, 5.0]);
       gl.uniform3fv(pwgl.uniformAmbientLightColorLoc, [0.2, 0.2, 0.2]);
       gl.uniform3fv(pwgl.uniformDiffuseLightColorLoc, [0.7, 0.7, 0.7]);
       gl.uniform3fv(pwgl.uniformSpecularLightColorLoc, [0.8, 0.8, 0.8]);
+      gl.useProgram(colorShaderProgram);
     }
 
     function uploadModelViewMatrixToShader() {
       gl.uniformMatrix4fv(pwgl.uniformMVMatrixLoc, false, pwgl.modelViewMatrix);
     }
 
+    function uploadModelViewMatrixToShader2() {
+      gl.uniformMatrix4fv(pwgl.uniformMVMatrixLoc2, false, pwgl.modelViewMatrix);
+    }
+
     function uploadProjectionMatrixToShader() {
       gl.uniformMatrix4fv(pwgl.uniformProjMatrixLoc, false, pwgl.projectionMatrix);
+    }
+
+    function uploadProjectionMatrixToShader2() {
+      gl.uniformMatrix4fv(pwgl.uniformProjMatrixLoc2, false, pwgl.projectionMatrix);
     }
 
     //MAIN DRAW FUNCTION
@@ -261,33 +314,32 @@
 
       yRot = xRot = zRot =transY=transZ=0;
 
-      uploadModelViewMatrixToShader();
-      uploadProjectionMatrixToShader();
-      uploadNormalMatrixToShader();
-
-      gl.uniform1i(pwgl.uniformSamplerLoc, 0);
-
       gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+      gl.useProgram(colorShaderProgram);
+
+      //FULL SATELLITE AND UNCOMMENT LINES TO FULLY ROTATE THE SATELLITE
+      pushModelViewMatrix();
+      mat4.translate(pwgl.modelViewMatrix, [0.0, 15.0, 0.0]);
+      //mat4.rotate(modelViewMatrix, toRadians(90), [0.0, 0.1, 0.0]);
+      drawColorFunction(drawSolarPanel, [-2.5, 0.0, 0.0], [0.4, 0.7, 1.0, 0.9], rotationC(true, [-45], [axisType.x])); //rotationC(true, [-45], [axisType.x]));
+      drawColorFunction(drawSolarPanel, [2.5, 0.0, 0.0], [0.4, 0.7, 1.0, 0.9], rotationC(true, [-45], [axisType.x])); //rotationC(true, [-45], [axisType.x]));
+      drawColorFunction(drawMainRod, [-1.5, 0.0, 0.0], [0.89, 0.772, 0, 1.0], rotationC(true, [90], [axisType.y]));
+      drawColorFunction(drawMainRod, [1.5, 0.0, 0.0], [0.89, 0.772, 0, 1.0], rotationC(true, [90], [axisType.y]));
+      drawColorFunction(drawSatelliteBody, [0, 0.0, 0.0], [0.8, 0.8, 0.8, 1.0], false);//rotationC(true, [45], [axisType.x]))
+      drawColorFunction(drawAntennaRod, [0.0, 0.0, -1.5], [0.89, 0.772, 0, 1.0], false);
+      drawColorFunction(drawAntenna, [0.0, 0.0, -3.5], [0.69, 0.572, 0, 1.0], rotationC(true, [90], [axisType.x])); //[0.89, 0.772, 0, 1.0], false);
+      popModelViewMatrix();
+
+      gl.useProgram(textureShaderProgram);
+      gl.uniform1i(pwgl.uniformSamplerLoc, 0);
 
       //Earth and earth size
       pushModelViewMatrix();
       mat4.scale(pwgl.modelViewMatrix, [10.0, 10.0, 10.0]); //Since the diameter of the sphere is 2, we multiply by 10 to achieve 20 diameter
-      drawFunction(drawEarth, [0.0, 0.0, 0.0], [0.12, 0.5, 0.0, 1.0], rotationC(true, [-110, 175, -10], [axisType.y, axisType.x, axisType.z]));
+      drawTextureFunction(drawEarth, [0.0, 0.0, 0.0], [0.12, 0.5, 0.0, 1.0], rotationC(true, [-110, 175, -10], [axisType.y, axisType.x, axisType.z]));
       popModelViewMatrix();
-
-      //FULL SATELLITE AND UNCOMMENT LINES TO FULLY ROTATE THE SATELLITE
-      //pushModelViewMatrix();
-      //mat4.translate(pwgl.modelViewMatrix, [0.0, 15.0, 0.0]);
-      //mat4.rotate(modelViewMatrix, toRadians(90), [0.0, 0.1, 0.0]);
-      //drawFunction(drawSolarPanel, [-2.5, 0.0, 0.0], [0.4, 0.7, 1.0, 0.9], rotationC(true, [-45], [axisType.x])); //rotationC(true, [-45], [axisType.x]));
-      //drawFunction(drawSolarPanel, [2.5, 0.0, 0.0], [0.4, 0.7, 1.0, 0.9], rotationC(true, [-45], [axisType.x])); //rotationC(true, [-45], [axisType.x]));
-      //drawFunction(drawMainRod, [-1.5, 0.0, 0.0], [0.89, 0.772, 0, 1.0], rotationC(true, [90], [axisType.y]));
-      //drawFunction(drawMainRod, [1.5, 0.0, 0.0], [0.89, 0.772, 0, 1.0], rotationC(true, [90], [axisType.y]));
-      //drawFunction(drawSatelliteBody, [0, 0.0, 0.0], [0.8, 0.8, 0.8, 1.0], false);//rotationC(true, [45], [axisType.x]))
-      //drawFunction(drawAntennaRod, [0.0, 0.0, -1.5], [0.89, 0.772, 0, 1.0], false);
-      //drawFunction(drawAntenna, [0.0, 0.0, -3.5], [0.69, 0.572, 0, 1.0], rotationC(true, [90], [axisType.x])); //[0.89, 0.772, 0, 1.0], false);
-      //popModelViewMatrix();
 
       //Calculate the animations
       /*pushModelViewMatrix();
@@ -422,7 +474,7 @@
       setupLights();
       setupTextures();
 
-      gl.clearColor(0.05, 0.05, 0.05, 1.0); //Clears the screen with white color
+      gl.clearColor(0.05, 0.05, 0.05, 1.0); //Clears the screen with greyish color
       gl.enable(gl.DEPTH_TEST); //Determine WebGL Capabilities
 
       //--------INITIALIZE SOME VARIABLES FOR THE ANIMATION EARTH ROTATE, IDK

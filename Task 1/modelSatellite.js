@@ -56,8 +56,8 @@ function setupSatelliteBodyBuffers(){
 //------------- DRAW MODELS --------------------
 function drawSatelliteBody(rgba){
   gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.satBodyVertexPositionBuffer);
-  gl.vertexAttribPointer(pwgl.vertexPositionAttributeLoc, pwgl.SATELLITE_VERTEX_POS_BUF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
-  gl.enableVertexAttribArray(pwgl.vertexPositionAttributeLoc);
+  gl.vertexAttribPointer(pwgl.vertexPositionAttributeLoc2, pwgl.SATELLITE_VERTEX_POS_BUF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
+  gl.enableVertexAttribArray(pwgl.vertexPositionAttributeLoc2);
 
   gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.satBodyVertexColorBuffer);
   gl.enableVertexAttribArray(pwgl.vertexColorAttributeLoc);

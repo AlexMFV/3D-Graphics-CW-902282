@@ -123,7 +123,7 @@ function drawSolarPanel(rgba){
   // Set color
   gl.vertexAttrib4f(pwgl.vertexColorAttributeLoc, rgba[0], rgba[1], rgba[2], rgba[3]);
   gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.solarPanelVertexPositionBuffer);
-  gl.vertexAttribPointer(pwgl.vertexPositionAttributeLoc, pwgl.SOLAR_VERTEX_POS_BUF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
+  gl.vertexAttribPointer(pwgl.vertexPositionAttributeLoc2, pwgl.SOLAR_VERTEX_POS_BUF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
 
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.solarPanelVertexIndexBuffer);
   gl.drawElements(gl.TRIANGLES, pwgl.SOLAR_VERTEX_INDEX_BUF_NUM_ITEMS, gl.UNSIGNED_SHORT, 0);
@@ -135,7 +135,7 @@ function drawMainRod(rgba){
   // Set color
   gl.vertexAttrib4f(pwgl.vertexColorAttributeLoc, rgba[0], rgba[1], rgba[2], rgba[3]);
   gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.rodVertexPositionBuffer);
-  gl.vertexAttribPointer(pwgl.vertexPositionAttributeLoc, pwgl.MAINROD_VERTEX_POS_BUF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
+  gl.vertexAttribPointer(pwgl.vertexPositionAttributeLoc2, pwgl.MAINROD_VERTEX_POS_BUF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
 
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.rodVertexIndexBuffer);
   gl.drawElements(gl.TRIANGLES, pwgl.MAINROD_VERTEX_INDEX_BUF_NUM_ITEMS, gl.UNSIGNED_SHORT, 0);
@@ -147,7 +147,7 @@ function drawAntennaRod(rgba){
   // Set color
   gl.vertexAttrib4f(pwgl.vertexColorAttributeLoc, rgba[0], rgba[1], rgba[2], rgba[3]);
   gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.antennaRodVertexPositionBuffer);
-  gl.vertexAttribPointer(pwgl.vertexPositionAttributeLoc, pwgl.ANTENNAROD_VERTEX_POS_BUF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
+  gl.vertexAttribPointer(pwgl.vertexPositionAttributeLoc2, pwgl.ANTENNAROD_VERTEX_POS_BUF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
 
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.antennaRodVertexIndexBuffer);
   gl.drawElements(gl.TRIANGLES, pwgl.ANTENNAROD_VERTEX_INDEX_BUF_NUM_ITEMS, gl.UNSIGNED_SHORT, 0);

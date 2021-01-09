@@ -1,5 +1,6 @@
 function setupTextures() {
   // Texture for the earth
+ gl.useProgram(textureShaderProgram);
  pwgl.earthTexture = gl.createTexture();
  loadImageForTexture("earth.jpg", pwgl.earthTexture);
 }

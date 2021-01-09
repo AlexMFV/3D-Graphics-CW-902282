@@ -3,13 +3,26 @@ function toRadians(deg){
   return deg * Math.PI/180;
 }
 
-function drawFunction(method, vec3Translate, rgbs, opts){
+function drawTextureFunction(method, vec3Translate, rgbs, opts){
   pushModelViewMatrix();
   mat4.translate(pwgl.modelViewMatrix, vec3Translate, pwgl.modelViewMatrix);
   if(opts[0])
     rotation(opts[1], opts[2]);
   uploadModelViewMatrixToShader();
+  uploadProjectionMatrixToShader();
   uploadNormalMatrixToShader();
+  method(rgbs);
+  popModelViewMatrix();
+}
+
+function drawColorFunction(method, vec3Translate, rgbs, opts){
+  pushModelViewMatrix();
+  mat4.translate(pwgl.modelViewMatrix, vec3Translate, pwgl.modelViewMatrix);
+  if(opts[0])
+    rotation(opts[1], opts[2]);
+  uploadModelViewMatrixToShader2();
+  uploadProjectionMatrixToShader2();
+  //uploadNormalMatrixToShader();
   method(rgbs);
   popModelViewMatrix();
 }
