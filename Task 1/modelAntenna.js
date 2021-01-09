@@ -52,6 +52,18 @@ function setupAntennaBuffers(){
 
   pwgl.ANTENNA_VERTEX_INDEX_BUF_ITEM_SIZE = 1;
   pwgl.ANTENNA_VERTEX_INDEX_BUF_NUM_ITEMS = Math.pow(cir_quality, 2)*6; //36;
+
+  //Defining Normals
+  pwgl.antennaVertexNormalBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.antennaVertexNormalBuffer);
+
+  var normalData = [
+    
+  ];
+
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normalData), gl.STATIC_DRAW);
+  pwgl.ANTENNA_VERTEX_NORMAL_BUF_ITEM_SIZE = 3;
+  pwgl.ANTENNA_VERTEX_NORMAL_BUF_NUM_ITEMS = 24;
 }
 
 function drawAntenna(rgba){
@@ -60,6 +72,10 @@ function drawAntenna(rgba){
   gl.vertexAttrib4f(pwgl.vertexColorAttributeLoc, rgba[0], rgba[1], rgba[2], rgba[3]);
   gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.antennaVertexPositionBuffer);
   gl.vertexAttribPointer(pwgl.vertexPositionAttributeLoc2, pwgl.ANTENNA_VERTEX_POS_BUF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
+
+  //Bind normals
+  gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.earthVertexNormalBuffer);
+  gl.vertexAttribPointer(pwgl.vertexNormalAttributeLoc2, pwgl.ANTENNA_VERTEX_NORMAL_BUF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
 
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.antennaVertexIndexBuffer);
   gl.drawElements(gl.TRIANGLES, pwgl.ANTENNA_VERTEX_INDEX_BUF_NUM_ITEMS, gl.UNSIGNED_SHORT, 0);

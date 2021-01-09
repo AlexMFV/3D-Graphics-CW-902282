@@ -129,7 +129,7 @@ function setupEarthBuffers(){
 function drawEarth(rgba){
   // Disable vertex attrib array and use constant color for the earth.
   gl.enableVertexAttribArray(pwgl.vertexColorAttributeLoc);
-  
+
   gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.earthVertexPositionBuffer);
   gl.vertexAttribPointer(pwgl.vertexPositionAttributeLoc, pwgl.EARTH_VERTEX_POS_BUF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
   //gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, earthVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);

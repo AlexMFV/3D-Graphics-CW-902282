@@ -22,7 +22,7 @@ function drawColorFunction(method, vec3Translate, rgbs, opts){
     rotation(opts[1], opts[2]);
   uploadModelViewMatrixToShader2();
   uploadProjectionMatrixToShader2();
-  //uploadNormalMatrixToShader();
+  uploadNormalMatrixToShader2();
   method(rgbs);
   popModelViewMatrix();
 }
