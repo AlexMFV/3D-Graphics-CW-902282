@@ -9,6 +9,7 @@ function drawFunction(method, vec3Translate, rgbs, opts){
   if(opts[0])
     rotation(opts[1], opts[2]);
   uploadModelViewMatrixToShader();
+  uploadNormalMatrixToShader();
   method(rgbs);
   popModelViewMatrix();
 }

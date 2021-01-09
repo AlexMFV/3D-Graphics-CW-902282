@@ -1,17 +1,17 @@
 function setupTextures() {
   // Texture for the earth
  pwgl.earthTexture = gl.createTexture();
- loadImageForTexture("./earth.jpg", pwgl.earthTexture);
+ loadImageForTexture("earth.jpg", pwgl.earthTexture);
 }
 
 function loadImageForTexture(url, texture) {
   var image = new Image();
   image.onload = function() {
-   pwgl.ongoingImageLoads.splice(pwgl.ongoingImageLoads.indexOf(image), 1);
-   textureFinishedLoading(image, texture);
+    pwgl.ongoingImageLoads.splice(pwgl.ongoingImageLoads.indexOf(image), 1);
+    textureFinishedLoading(image, texture);
   }
- pwgl.ongoingImageLoads.push(image);
- image.src = url;
+  pwgl.ongoingImageLoads.push(image);
+  image.src = url;
 }
 
 function textureFinishedLoading(image, texture) {
