@@ -270,10 +270,10 @@
 
     function setupLights(){
       gl.useProgram(textureShaderProgram);
-      gl.uniform3fv(pwgl.uniformLightPositionLoc, [0.0, 20.0, 5.0]);
-      gl.uniform3fv(pwgl.uniformAmbientLightColorLoc, [0.2, 0.2, 0.2]);
+      gl.uniform3fv(pwgl.uniformLightPositionLoc, [60.0, 60.0, 0.0]);
+      gl.uniform3fv(pwgl.uniformAmbientLightColorLoc, [0.1, 0.1, 0.1]);
       gl.uniform3fv(pwgl.uniformDiffuseLightColorLoc, [0.7, 0.7, 0.7]);
-      gl.uniform3fv(pwgl.uniformSpecularLightColorLoc, [0.8, 0.8, 0.8]);
+      gl.uniform3fv(pwgl.uniformSpecularLightColorLoc, [0.5, 0.5, 0.5]);
       gl.useProgram(colorShaderProgram);
     }
 
@@ -309,8 +309,8 @@
 
       mat4.translate(pwgl.modelViewMatrix, [0.0, transY, transZ],
       pwgl.modelViewMatrix);
-      mat4.rotateX(pwgl.modelViewMatrix, xRot/50, pwgl.modelViewMatrix);
-      mat4.rotateY(pwgl.modelViewMatrix, yRot/50, pwgl.modelViewMatrix);
+      mat4.rotateX(pwgl.modelViewMatrix, xRot/80, pwgl.modelViewMatrix);
+      mat4.rotateY(pwgl.modelViewMatrix, yRot/80, pwgl.modelViewMatrix);
 
       yRot = xRot = zRot =transY=transZ=0;
 
@@ -319,10 +319,30 @@
 
       gl.useProgram(colorShaderProgram);
 
-      //FULL SATELLITE AND UNCOMMENT LINES TO FULLY ROTATE THE SATELLITE
+      if (currentTime === undefined) {
+        currentTime = Date.now();
+      }
+
+      if (pwgl.animationStartTime === undefined) {
+        pwgl.animationStartTime = currentTime;
+      }
+
       pushModelViewMatrix();
-      mat4.translate(pwgl.modelViewMatrix, [0.0, 15.0, 0.0]);
-      //mat4.rotate(modelViewMatrix, toRadians(90), [0.0, 0.1, 0.0]);
+
+      // Update the position of the box
+      pwgl.satAngle = (currentTime - pwgl.animationStartTime)/2000*2*Math.PI % (2*Math.PI) * pwgl.orbitSpeed;
+      pwgl.satX = Math.cos(pwgl.satAngle) * pwgl.orbitRadius;
+      pwgl.satZ = Math.sin(pwgl.satAngle) * pwgl.orbitRadius;
+
+      if(pwgl.satRotation <= 0)
+        pwgl.satRotation = 360;
+
+      pwgl.satRotation -= (pwgl.orbitSpeed*1.5);
+
+      //FULL SATELLITE AND UNCOMMENT LINES TO FULLY ROTATE THE SATELLITE
+      //mat4.translate(pwgl.modelViewMatrix, [0.0, 18.0, 0.0]);
+      mat4.translate(pwgl.modelViewMatrix, [pwgl.satX, pwgl.satY, pwgl.satZ]);
+      mat4.rotate(pwgl.modelViewMatrix, toRadians(pwgl.satRotation), [0.0, 1.0, 0.0]);
       drawColorFunction(drawSolarPanel, [-2.5, 0.0, 0.0], [0.4, 0.7, 1.0, 0.9], rotationC(true, [-45], [axisType.x])); //rotationC(true, [-45], [axisType.x]));
       drawColorFunction(drawSolarPanel, [2.5, 0.0, 0.0], [0.4, 0.7, 1.0, 0.9], rotationC(true, [-45], [axisType.x])); //rotationC(true, [-45], [axisType.x]));
       drawColorFunction(drawMainRod, [-1.5, 0.0, 0.0], [0.89, 0.772, 0, 1.0], rotationC(true, [90], [axisType.y]));
@@ -335,40 +355,19 @@
       gl.useProgram(textureShaderProgram);
       gl.uniform1i(pwgl.uniformSamplerLoc, 0);
 
-      //Earth and earth size
+      //Calculate the earth rotating animation
       pushModelViewMatrix();
-      mat4.scale(pwgl.modelViewMatrix, [10.0, 10.0, 10.0]); //Since the diameter of the sphere is 2, we multiply by 10 to achieve 20 diameter
-      drawTextureFunction(drawEarth, [0.0, 0.0, 0.0], [0.12, 0.5, 0.0, 1.0], rotationC(true, [-110, 175, -10], [axisType.y, axisType.x, axisType.z]));
+
+      //Earth Rotation Calculation
+      if(pwgl.y >= 360)
+        pwgl.y = 0;
+      else
+        pwgl.y += pwgl.rotationSpeed;
+
+      //mat4.rotate(pwgl.modelViewMatrix, [0, pwgl.y, 0], pwgl.modelViewMatrix);
+      mat4.scale(pwgl.modelViewMatrix, [10, 10, 10], pwgl.modelViewMatrix); //Set Earth size
+      drawTextureFunction(drawEarth, [0.0, 0.0, 0.0], [0.12, 0.5, 0.0, 1.0], rotationC(true, [-110, 175, -10, pwgl.y], [axisType.y, axisType.x, axisType.z, axisType.y]));
       popModelViewMatrix();
-
-      //Calculate the animations
-      /*pushModelViewMatrix();
-      if (currentTime === undefined) {
-        currentTime = Date.now();
-      }
-
-      if (pwgl.animationStartTime === undefined) {
-        pwgl.animationStartTime = currentTime;
-      }
-
-      // Update the position of the box
-      if (pwgl.y < 5) {
-        pwgl.y = 2.7 + (currentTime - pwgl.animationStartTime)/3000 *
-        (5.0 - 2.7);
-      } else {
-        pwgl.angle = (currentTime - pwgl.animationStartTime)/2000*2*Math.PI %
-        (2*Math.PI);
-        pwgl.x = Math.cos(pwgl.angle) * pwgl.circleRadius;
-        pwgl.z = Math.sin(pwgl.angle) * pwgl.circleRadius;
-      }
-
-      mat4.translate(pwgl.modelViewMatrix, [pwgl.x, pwgl.y, pwgl.z],
-      pwgl.modelViewMatrix);
-      mat4.scale(pwgl.modelViewMatrix, [0.5, 0.5, 0.5], pwgl.modelViewMatrix);
-      uploadModelViewMatrixToShader();
-      uploadNormalMatrixToShader();
-      drawCube(pwgl.boxTexture);
-      popModelViewMatrix();*/
 
       pwgl.nbrOfFramesForFPS++;
     }
@@ -398,16 +397,35 @@
 
     function handlePressedDownKeys() {
       if (pwgl.listOfPressedKeys[38]) {
-        // Arrow up, increase radius of circle
-        pwgl.circleRadius += 0.1;
+        // Arrow up, increase orbit speed
+        if (pwgl.orbitSpeed >= 5.0)
+          pwgl.orbitSpeed = 5.0;
+        else
+          pwgl.orbitSpeed += 0.01;
       }
 
       if (pwgl.listOfPressedKeys[40]) {
-        // Arrow down, decrease radius of circle
-        pwgl.circleRadius -= 0.1;
-        if (pwgl.circleRadius < 0) {
-          pwgl.circleRadius = 0;
-        }
+        // Arrow down, decrease radius of orbit
+        if (pwgl.orbitSpeed <= 1.0)
+          pwgl.orbitSpeed = 1.0;
+        else
+          pwgl.orbitSpeed -= 0.01;
+      }
+
+      //Left Arrow Key - Reduce Orbit Radius
+      if(pwgl.listOfPressedKeys[37]){
+        if(pwgl.orbitRadius < 14.0)
+          pwgl.orbitRadius = 14.0;
+        else
+          pwgl.orbitRadius -= 0.1;
+      }
+
+      //Right Arrow Key - Add to Orbit Radius
+      if(pwgl.listOfPressedKeys[39]){
+        if(pwgl.orbitRadius >= 50.0)
+          pwgl.orbitRadius = 50.0;
+        else
+          pwgl.orbitRadius += 0.1;
       }
     }
 
@@ -434,14 +452,11 @@
       }
       xOffs = ev.clientX;
       yOffs = ev.clientY;
-      //console.log("xRot= "+xRot+"    yRot="+yRot+"   trans=  "+transl);
-      //console.log("xOff= "+xOffs+"    yOff="+yOffs);
     }
 
     function wheelHandler(ev) {
       if (ev.altKey) transY = -ev.detail/10;
       else transZ =ev.detail/10;
-      //console.log("delta ="+ev.detail);
       ev.preventDefault();
     }
 
@@ -478,6 +493,16 @@
       gl.enable(gl.DEPTH_TEST); //Determine WebGL Capabilities
 
       //--------INITIALIZE SOME VARIABLES FOR THE ANIMATION EARTH ROTATE, IDK
+      pwgl.y = 0.0;
+      pwgl.rotationSpeed = 0.2;
+
+      pwgl.orbitRadius = 15.0;
+      pwgl.orbitSpeed = 1.0;
+      pwgl.satRotation = 90.0; //Starting Rotation
+      pwgl.satAngle = 0.0;
+      pwgl.satX = 0.0;
+      pwgl.satY = 0.0;
+      pwgl.satZ = 0.0;
 
       // Initialize some variables related to the animation
       pwgl.animationStartTime = undefined;
