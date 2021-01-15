@@ -1,8 +1,8 @@
-function [origImg, computedImg, carStats] = getSizeAndColor(imageNum, defaults)
+function carStats = getSizeAndColor(imageNum, defaults)
 
-origImg = imread(strcat(imageNum,'.jpg'));
+image = imread(strcat(imageNum,'.jpg'));
 
-hsv = rgb2hsv(origImg); %Get image hsv values
+hsv = rgb2hsv(image); %Get image hsv values
 blueOnly = hsv(:, :, 2); %Limit the blue values
 foreground = blueOnly > 0.5; % Cut the foreground
 
@@ -35,3 +35,9 @@ carStats.posX = carStats.cornerX + (carStats.width/2);
 carStats.posY = carStats.cornerY + (carStats.length/2);
 carStats.realWidth = calcSize("w", carStats, defaults);
 carStats.realLength = calcSize("l", carStats, defaults);
+
+%Creates a crop of the car only, to process the color;
+rect = [carStats.cornerX, carStats.cornerY, carStats.width , carStats.length];
+croppedImg = imcrop(image, rect);
+
+carStats.color = calcColor(croppedImg);

@@ -1,26 +1,46 @@
 function size = calcSize(axis, carStats, defaults)
 
-%---------- Size of Car ---------------
+%Changes between length and width
 if(axis == "l")
-    offset = defaults.screenY - (carStats.posY + (carStats.length/2));
+    offsetAngle = defaults.screenY - (carStats.cornerY + carStats.length);
 else
-    offset = defaults.screenX - carStats.cornerX;
+    offsetAngle = defaults.screenX/2 - (carStats.cornerX + carStats.width/2);
 end
 
-degBottToMid = (offset * defaults.degPerPixel); %Total Degree bottom car to top Image
-carBackAngle = 60 + degBottToMid;
-carBackDistance = defaults.camHeight * tan(carBackAngle);
+angle = 60 + (offsetAngle * defaults.degPerPixel);
+dist = defaults.camHeight * tand(angle);
+fullDist = hypot(defaults.camHeight, dist);
 
 if(axis == "l")
-    degTopToMid = ((defaults.screenY - carStats.cornerY) * defaults.degPerPixel); %Total Degree top car to top Image
+    finalDeg = carStats.length * defaults.degPerPixel;
 else
-    degTopToMid = (defaults.screenX - (carStats.cornerX + carStats.width)) * defaults.degPerPixel; %Total Degree right car to right Image
-end 
+    finalDeg = carStats.width/2 * defaults.degPerPixel;
+end
 
-carTopAngle = 60 + degTopToMid;
-carTopDistance = defaults.camHeight * tan(carTopAngle);
+size = (fullDist * tand(finalDeg)) * 2;
 
-size = (carTopDistance - carBackDistance) /10; %in meters
+%---------- Failed Attempts ---------------
+% if(axis == "l")
+%     %offset = defaults.screenY/2 - (carStats.posY + (carStats.length/2));
+%     offset = defaults.screenY
+% else
+%     offset = defaults.screenX/2 - (carStats.cornerX + (carStats.width/2));
+% end
+% 
+% degBottToMid = (offset * defaults.degPerPixel); %Total Degree bottom car to top Image
+% carBackAngle = 60 + degBottToMid;
+% carBackDistance = defaults.camHeight * tand(carBackAngle);
+% 
+% if(axis == "l")
+%     degTopToMid = ((defaults.screenY/2 - carStats.cornerY) * defaults.degPerPixel); %Total Degree top car to top Image
+% else
+%     degTopToMid = (defaults.screenX/2 - (carStats.cornerX + carStats.width)) * defaults.degPerPixel; %Total Degree right car to right Image
+% end 
+% 
+% carTopAngle = 60 + degTopToMid;
+% carTopDistance = defaults.camHeight * tand(carTopAngle);
+% 
+% size = (carTopDistance - carBackDistance); %in meters
 
 %---------- Width of Car ---------------
 %offsetX = screenX - carCornerX;
