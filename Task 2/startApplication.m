@@ -1,16 +1,17 @@
 function startApplication(image1, image2)
 close all %closes all the opened windows
 
-%--------- Glob Variables ----------
-defaults.camHeight = 7;
-defaults.degPerPixel = 0.042;
-defaults.screenX = 480;
-defaults.screenY = 640;
-%-------- /Glob Variables -----------
+defaults = setGlobalVars();
 
 %Gets the sizes and different images from processing the car
-carStats = getSizeAndColor(image1, defaults);
+[carStats, s1, s2, s3, s4, s5] = getSizeAndColor(image1, defaults);
 carStats2 = getSizeAndColor(image2, defaults);
+
+subplot(2,3,1), imshow(s1);
+subplot(2,3,2), imshow(s2);
+subplot(2,3,3), imshow(s3);
+subplot(2,3,4), imshow(s4);
+subplot(2,3,6), imshow(s5);
 
 %Draws a crosshair at the center of the car
 drawCrosshair(carStats.posX, carStats.posY);

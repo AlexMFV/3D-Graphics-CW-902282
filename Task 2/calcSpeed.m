@@ -7,5 +7,5 @@ function speed = calcSpeed(car1, car2, defaults)
     dist_car1 = defaults.degPerPixel * tand(deg_car1); %Calculate horizontal distance to both cars
     dist_car2 = defaults.degPerPixel * tand(deg_car2);    
     distance = (dist_car2 - dist_car1)*1000; %Subtract the later picture to the first one to get the distance travelled
-    speed = distance * 2.23693629; %Convert distance to KMH then to speed in MPH
+    speed = distance * defaults.convertMph; %Convert distance to KMH then to speed in MPH
 end

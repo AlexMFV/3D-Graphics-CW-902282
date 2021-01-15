@@ -1,4 +1,4 @@
-function carStats = getSizeAndColor(imageNum, defaults)
+function [carStats, image, labeledImage, eroded, closed, computedImg] = getSizeAndColor(imageNum, defaults)
 
 image = imread(strcat(imageNum,'.jpg'));
 
