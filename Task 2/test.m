@@ -24,6 +24,8 @@ disp("Is oversized?: " + isOversized(carStart.realWidth));
 disp("Is speeding?: " + isSpeeding(carStart.speed));
 %Test speeding (car is speeding)
 disp("Is Fire Engine?: " + isFireEngine(carStart.color));
+disp("Color: " + carStart.color);
+
 
 %--------------------------------------------------------------------------
 
@@ -41,6 +43,7 @@ disp("Is oversized?: " + isOversized(carStart.realWidth));
 disp("Is speeding?: " + isSpeeding(carStart.speed));
 %Test speeding (car is speeding)
 disp("Is Fire Engine?: " + isFireEngine(carStart.color));
+disp("Color: " + carStart.color);
 
 %--------------------------------------------------------------------------
 
@@ -54,5 +57,25 @@ disp("---- Test oversized vehicle ----");
 disp("Is oversized?: " + isOversized(carStart.realWidth));
 %Test fire engine (car is speeding)
 disp("Is Fire Engine?: " + isFireEngine(carStart.color));
+disp("Color: " + carStart.color);
 
 %--------------------------------------------------------------------------
+
+%Test all speeds
+fprintf("\n");
+disp("---- Test all car speeds ----");
+speeds = ["001", "002","003", "004","005", "006","007", "008","009", "010","011"];
+
+for i=2:length(speeds)
+    %Set car start position and end position (speeding)
+    carStart = getSizeAndColor(speeds(1), defaults);
+    carEnd = getSizeAndColor(speeds(i), defaults);
+    carStart.speed = calcSpeed(carStart, carEnd, defaults); %update Speed
+
+    disp("Vehicle Speed: " + carStart.speed + " mph");
+    disp("Is speeding?: " + isSpeeding(carStart.speed));
+    fprintf("\n");
+end
+
+%Make sure the last image corresponds to the close-up car
+carStart = getSizeAndColor("001", defaults);
