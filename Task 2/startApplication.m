@@ -7,6 +7,7 @@ defaults = setGlobalVars();
 [carStats, s1, s2, s3, s4, s5] = getSizeAndColor(image1, defaults);
 carStats2 = getSizeAndColor(image2, defaults);
 
+%Generate all the images of the transformations as a showcase
 subplot(2,3,1), imshow(s1);
 subplot(2,3,2), imshow(s2);
 subplot(2,3,3), imshow(s3);
@@ -16,6 +17,7 @@ subplot(2,3,6), imshow(s5);
 %Draws a crosshair at the center of the car
 drawCrosshair(carStats.posX, carStats.posY);
 
+%Calculate the speed of the car, based on the 2 images
 carStats.speed = calcSpeed(carStats, carStats2, defaults);
 
 %Output the lines regarding the car size, speed, color, etc

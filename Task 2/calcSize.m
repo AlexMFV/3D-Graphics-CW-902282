@@ -1,16 +1,18 @@
 function size = calcSize(axis, carStats, defaults)
 
 %Changes between length and width
+%Calculate the offset angle between the bottom of the image to the car
 if(axis == "l")
     offsetAngle = defaults.screenY - (carStats.cornerY + carStats.length);
 else
     offsetAngle = defaults.screenX/2 - (carStats.cornerX + carStats.width/2);
 end
 
-angle = 60 + (offsetAngle * defaults.degPerPixel);
-dist = defaults.camHeight * tand(angle);
-fullDist = hypot(defaults.camHeight, dist);
+angle = 60 + (offsetAngle * defaults.degPerPixel); %calculate the overall angle between the camera and the car position
+dist = defaults.camHeight * tand(angle); %Calculate the distance with the tangent of the angle
+fullDist = hypot(defaults.camHeight, dist); %Calcualte the hypotenuse between the distance and the cameraHeight (this allows us to get the distance to the car)
 
+%After the distance calculate the size of the car
 if(axis == "l")
     finalDeg = carStats.length * defaults.degPerPixel;
 else

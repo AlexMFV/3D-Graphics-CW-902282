@@ -8,3 +8,6 @@ disp("Car is speeding (Y/N): " + isSpeeding(carStats.speed));
 disp("Car is oversized (Y/N): " + isOversized(carStats.realWidth));
 disp("Car is fire engine (Y/N): " + isFireEngine(carStats.color));
 end
+
+%This function prints all the necessary information of the car, along with
+%all the calculations made

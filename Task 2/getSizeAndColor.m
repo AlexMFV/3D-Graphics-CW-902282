@@ -1,5 +1,5 @@
 function [carStats, image, labeledImage, eroded, closed, computedImg] = getSizeAndColor(imageNum, defaults)
-
+%Read the image
 image = imread(strcat(imageNum,'.jpg'));
 
 hsv = rgb2hsv(image); %Get image hsv values
@@ -40,4 +40,5 @@ carStats.realLength = calcSize("l", carStats, defaults);
 rect = [carStats.cornerX, carStats.cornerY, carStats.width , carStats.length];
 croppedImg = imcrop(image, rect);
 
+%Calculate the color of the car with the croppedImage, of the car only
 carStats.color = calcColor(croppedImg);

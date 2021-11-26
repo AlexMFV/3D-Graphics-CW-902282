@@ -1,7 +1,8 @@
-clear
-clc
-close all
+clear %Clear memory
+clc %Clear console
+close all %Close all opened windows
 
+%Sets all the variables of the object default
 defaults = setGlobalVars();
 
 disp("---- Main Function Output / 001 - 003 ----");
@@ -25,7 +26,6 @@ disp("Is speeding?: " + isSpeeding(carStart.speed));
 %Test speeding (car is speeding)
 disp("Is Fire Engine?: " + isFireEngine(carStart.color));
 disp("Color: " + carStart.color);
-
 
 %--------------------------------------------------------------------------
 
